@@ -1,101 +1,48 @@
-#!python3
 
 import pandas as pd
 
-reports = pd.read_csv("/Users/jb/Desktop/reports.CSV")
+reports = pd.read_csv("C:\\Users\\00015\\Desktop\\reports.CSV")
 labels = reports["Label"]
-proj_dict = {}
 
-def get_b(r):
-    """
-    this is getting the page numbers
-    from the job file, so we can use
-    it to count sets - it just gets
-    passed a splice when used here
-    """
-    b = ''
-    for s in r:
-        if s.isdigit():
-            b=b+s
-    if b == '':
-        b = 0
-    else:
-        b = int(b)
-    return b
+working_dict = dict()
+
+def get_job_num(file):
+	"""
+	This is splitting the data
+	to get the plp job number
+	"""
+	x = file.split('\\')
+	return x[3]
 
 
-def clean_up(dict):
-    """
-    this is cleaning the single-sheets
-    jobs out of the dict - if they were
-    printed more than once I'm not concerned
-    """
-    singles = []
-    for i in dict:
-        if dict[i] == [0, 0]:
-            singles.append(i)
-    for x in singles:
-        del dict[x]
-    return dict
-
-
-def sort_jobs(file):
-    """
-    this is going through the csv file and
-    sorting the needed data into a dict with
-    plp job num as the key and [num of pages, sets]
-    as the value - the sets are set to 0 for now
-    """
-    for i in file:
-        a = i[19:27]
-        b = get_b(i[-6:])
-        x = [a, b]
-        if a in proj_dict:
-            if proj_dict[a] == 0:
-                pass
-            if b > proj_dict[a][0]:
-                proj_dict[a][0] = b
-        else:
-            proj_dict[a] = [b, 0]
-    clean_up(proj_dict)
-    return proj_dict
-
-
-def count_sets(file, dict):
-    """
-    this is going through the csv
-    and every time it sees the high
-    page num for a plp job num, it
-    adds 1 to the sets printed
-    """
-    for i in file:
-        a = i[19:27]
-        b = get_b(i[-6:])
-        if not a in dict:
-            pass
-        else:
-            if dict[a][0] == b:
-                dict[a][1] = dict[a][1] + 1
-    return dict
-
-
-def clean_out(dict):
-    """
-    the is cleaning out any job
-    that only printed one set
-    """
-    outs = []
-    for i in dict:
-        if dict[i][1] == 1:
-            outs.append(i)
-    for x in outs:
-        del dict[x]
-    return dict
-
-
-
-test = sort_jobs(labels)
-answer = count_sets(labels, test)
-result = clean_out(answer)
-for i in result:
-    print(i, proj_dict[i])
+def main():
+	"""
+	So much looping!  But this is
+	sorting through all files and
+	organizing by PLP job number,
+	then adding all files printed
+	in that job to a list and counting
+	how many times the first file name
+	appears in that list to show how
+	many sets were printed, and returning
+	that info in a dict.
+	"""
+	temp_dict = dict()
+	for jobs in labels:  # Going through labels and pulling the PLP job number, then adding to dict
+		job_num=get_job_num(jobs)
+		if not jobs in temp_dict:
+			temp_dict[job_num] = []
+	for job_nums in temp_dict:  # Going through the temp dict getting the PLP job numbers
+		temp_list = []
+		for x in labels:  # Going through labels and putting all files from PLP job number into a list
+			if get_job_num(x) == job_nums:
+				temp_list.append(x)
+		temp_dict[job_nums] = temp_list  # The PLP job number is the key and the list of files printed is the value
+	for inst in temp_dict:
+		count = 0
+		checker = temp_dict[inst][0]  # The first file in the list is set as a check point
+		for last_one in temp_dict[inst]:  # Itterating the list and checking how many times the first file shows up
+			if last_one == checker:
+				count += 1
+		working_dict[inst] = count  # The PLP job number is the key and the number of sets printed is the value
+	return working_dict
