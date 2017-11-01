@@ -1,7 +1,9 @@
 
+import os
 import pandas as pd
 
-reports = pd.read_csv("C:\\Users\\00015\\Desktop\\reports.CSV")
+file_path = os.path.join(os.environ['HOME'], 'Desktop', 'reports.csv')
+reports = pd.read_csv(file)
 labels = reports["Label"]
 
 working_dict = dict()
