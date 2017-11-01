@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 file_path = os.path.join(os.environ['HOME'], 'Desktop', 'reports.csv')
-reports = pd.read_csv(file)
+reports = pd.read_csv(file_path)
 labels = reports["Label"]
 
 working_dict = dict()
