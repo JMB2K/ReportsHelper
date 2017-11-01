@@ -1,12 +1,13 @@
 
-import os
+import os, time
 import pandas as pd
+from collections import OrderedDict as OD
 
-file_path = os.path.join(os.environ['HOME'], 'Desktop', 'reports.csv')
+file_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'reports.csv')
 reports = pd.read_csv(file_path)
 labels = reports["Label"]
 
-working_dict = dict()
+working_dict = OD()
 
 def get_job_num(file):
 	"""
@@ -29,22 +30,40 @@ def main():
 	many sets were printed, and returning
 	that info in a dict.
 	"""
-	temp_dict = dict()
+	temp_dict = OD()
 	for jobs in labels:  # Going through labels and pulling the PLP job number, then adding to dict
 		job_num=get_job_num(jobs)
-		if not jobs in temp_dict:
+		if not job_num in temp_dict:
 			temp_dict[job_num] = []
+
 	for job_nums in temp_dict:  # Going through the temp dict getting the PLP job numbers
 		temp_list = []
 		for x in labels:  # Going through labels and putting all files from PLP job number into a list
 			if get_job_num(x) == job_nums:
 				temp_list.append(x)
 		temp_dict[job_nums] = temp_list  # The PLP job number is the key and the list of files printed is the value
-	for inst in temp_dict:
+	for job_nums in temp_dict:
 		count = 0
-		checker = temp_dict[inst][0]  # The first file in the list is set as a check point
-		for last_one in temp_dict[inst]:  # Itterating the list and checking how many times the first file shows up
+		checker = temp_dict[job_nums][0]  # The first file in the list is set as a check point
+		for last_one in temp_dict[job_nums]:  # Itterating the list value and checking how many times the first file shows up
 			if last_one == checker:
 				count += 1
-		working_dict[inst] = count  # The PLP job number is the key and the number of sets printed is the value
-	return working_dict
+		working_dict[job_nums] = count  # The PLP job number is the key and the number of sets printed is the value
+	final_dict = OD()
+	for key, value in working_dict.items():
+		if value > 1:
+			final_dict[key] = value
+	return final_dict
+
+
+if __name__ == "__main__":
+	start = time.time()
+	final_dict = main()
+	new_line = 0
+	for key, value in sorted(final_dict.items()):
+		print("{} - {} sets".format(key, value), end='\t')
+		new_line += 1
+		if new_line % 3 == 0:
+			print('\n')
+	elapsed = time.time() - start
+	print("\nThere are {} jobs, sorted in {:.2f} seconds".format(len(final_dict), elapsed))
