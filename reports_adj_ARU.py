@@ -1,9 +1,9 @@
 
 import pandas as pd
-import time
+import time, os
 
-
-reader = pd.read_csv('C:\\Users\\00015\\Desktop\\ARU.log', low_memory=False)
+file_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'ARU.log')
+reader = pd.read_csv(file_path, low_memory=False)
 data = reader[["JOB_FILENAME", "IMAGE_FILENAME"]]  # Get the only data we need
 data_dict=dict()
 
@@ -15,9 +15,9 @@ def organize(data):
     value
     """
     temp=[]
-    for job, file in data.iterrows():
-        jobname=file["JOB_FILENAME"][:-4]
-        temp.append([jobname, file['IMAGE_FILENAME']])
+    for file in data.iterrows():
+        jobname=file[1]["JOB_FILENAME"][:-4]
+        temp.append([jobname, file[1]['IMAGE_FILENAME']])
         if not jobname in data_dict:
             data_dict[jobname] = []  # creating keys in dict
     for plp in data_dict:
